@@ -13,13 +13,14 @@ sequelize.sync({ force: false }) // Cambiar a true solo si quieres recrear las t
     })
     .then(() => {
         console.log('Base de datos inicializada completamente.');
+        
+        // Iniciar el servidor DESPUÉS de que la BD esté lista
+        app.listen(port, '0.0.0.0', () => {
+            console.log(`🚀 API corriendo en http://localhost:${port}`);
+            console.log(`📚 Documentación Swagger en http://localhost:${port}/api-docs`);
+        });
     })
     .catch((err) => {
         console.error('Error al sincronizar las tablas:', err);
+        process.exit(1);
     });
-    
-// Iniciar el servidor
-app.listen(port, () => {
-    console.log(`🚀 API corriendo en http://localhost:${port}`);
-    console.log(`📚 Documentación Swagger en http://localhost:${port}/api-docs`);
-});
