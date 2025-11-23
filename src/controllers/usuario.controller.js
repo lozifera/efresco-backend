@@ -179,6 +179,54 @@ const obtenerPerfil = async (req, res) => {
 };
 
 /**
+ * Obtener datos de usuario por ID (público)
+ */
+const obtenerUsuarioPorId = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const usuario = await Usuario.findByPk(id, {
+            attributes: { 
+                exclude: ['password_hash', 'reset_password_token', 'reset_password_expires'] 
+            },
+            include: [{
+                model: Rol,
+                through: { attributes: [] }
+            }]
+        });
+
+        if (!usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        res.json({
+            usuario: {
+                id_usuario: usuario.id_usuario,
+                nombre: usuario.nombre,
+                apellido: usuario.apellido,
+                email: usuario.email,
+                telefono: usuario.telefono,
+                direccion: usuario.direccion,
+                ubicacion_lat: usuario.ubicacion_lat,
+                ubicacion_lng: usuario.ubicacion_lng,
+                foto_perfil_url: usuario.foto_perfil_url,
+                verificado: usuario.verificado,
+                fecha_registro: usuario.fecha_registro,
+                roles: usuario.Rols?.map(rol => rol.nombre) || []
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error al obtener usuario',
+            details: error.message
+        });
+    }
+};
+
+/**
  * Actualizar perfil de usuario
  */
 const actualizarPerfil = async (req, res) => {
@@ -552,6 +600,7 @@ module.exports = {
     registrarUsuario,
     iniciarSesion,
     obtenerPerfil,
+    obtenerUsuarioPorId,
     actualizarPerfil,
     listarUsuarios,
     solicitarRecuperacionPassword,

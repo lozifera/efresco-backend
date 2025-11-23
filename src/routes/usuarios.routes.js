@@ -183,6 +183,34 @@ router.get('/perfil', verifyToken, usuarioController.obtenerPerfil);
 
 /**
  * @swagger
+ * /api/usuarios/{id}:
+ *   get:
+ *     summary: Obtener datos de usuario por ID
+ *     tags: [Usuarios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Datos del usuario
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 usuario:
+ *                   $ref: '#/components/schemas/Usuario'
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.get('/:id', usuarioController.obtenerUsuarioPorId);
+
+/**
+ * @swagger
  * /api/usuarios/perfil:
  *   put:
  *     summary: Actualizar perfil del usuario autenticado
