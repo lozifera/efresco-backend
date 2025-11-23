@@ -466,6 +466,88 @@ const restablecerPassword = async (req, res) => {
     }
 };
 
+/**
+ * Subir foto de perfil
+ */
+const subirFotoPerfil = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                error: 'No se ha subido ningún archivo'
+            });
+        }
+
+        const usuario = await Usuario.findByPk(req.usuario.id_usuario);
+        
+        if (!usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        // Construir URL de la imagen
+        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+        const foto_perfil_url = `${baseUrl}/uploads/${req.file.filename}`;
+
+        // Actualizar URL de foto en la base de datos
+        await usuario.update({
+            foto_perfil_url: foto_perfil_url
+        });
+
+        console.log(`📷 Foto de perfil actualizada para usuario ${usuario.id_usuario}: ${foto_perfil_url}`);
+
+        res.status(200).json({
+            mensaje: 'Foto de perfil subida exitosamente',
+            foto_perfil_url: foto_perfil_url,
+            file_info: {
+                filename: req.file.filename,
+                size: req.file.size,
+                mimetype: req.file.mimetype
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error subiendo foto de perfil:', error);
+        res.status(500).json({
+            error: 'Error interno del servidor',
+            details: error.message
+        });
+    }
+};
+
+/**
+ * Eliminar foto de perfil
+ */
+const eliminarFotoPerfil = async (req, res) => {
+    try {
+        const usuario = await Usuario.findByPk(req.usuario.id_usuario);
+        
+        if (!usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        // Eliminar URL de foto en la base de datos
+        await usuario.update({
+            foto_perfil_url: null
+        });
+
+        console.log(`🗑️ Foto de perfil eliminada para usuario ${usuario.id_usuario}`);
+
+        res.status(200).json({
+            mensaje: 'Foto de perfil eliminada exitosamente'
+        });
+
+    } catch (error) {
+        console.error('❌ Error eliminando foto de perfil:', error);
+        res.status(500).json({
+            error: 'Error interno del servidor',
+            details: error.message
+        });
+    }
+};
+
 module.exports = {
     registrarUsuario,
     iniciarSesion,
@@ -474,5 +556,7 @@ module.exports = {
     listarUsuarios,
     solicitarRecuperacionPassword,
     verificarTokenRecuperacion,
-    restablecerPassword
+    restablecerPassword,
+    subirFotoPerfil,
+    eliminarFotoPerfil
 };

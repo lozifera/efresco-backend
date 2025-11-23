@@ -5,6 +5,7 @@ const router = express.Router();
 const usuarioController = require('../controllers/usuario.controller');
 const { verifyToken, checkRole } = require('../middlewares/auth.middleware');
 const { handleValidationErrors } = require('../middlewares/validation.middleware');
+const { handleImageUpload } = require('../middlewares/upload.middleware');
 
 // Validaciones
 const validarRegistro = [
@@ -366,5 +367,84 @@ router.post('/verificar-token', validarVerificacionToken, usuarioController.veri
  *         description: Error interno del servidor
  */
 router.post('/restablecer-password', validarRestablecerPassword, usuarioController.restablecerPassword);
+
+/**
+ * @swagger
+ * /api/usuarios/foto-perfil:
+ *   post:
+ *     summary: Subir foto de perfil
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imagen:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo de imagen (JPG, JPEG, PNG, GIF, WEBP). Máximo 5MB.
+ *     responses:
+ *       200:
+ *         description: Foto de perfil subida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *                   example: "Foto de perfil subida exitosamente"
+ *                 foto_perfil_url:
+ *                   type: string
+ *                   example: "https://efresco-backend.onrender.com/uploads/imagen-1732345678-123456789.jpg"
+ *                 file_info:
+ *                   type: object
+ *                   properties:
+ *                     filename:
+ *                       type: string
+ *                     size:
+ *                       type: number
+ *                     mimetype:
+ *                       type: string
+ *       400:
+ *         description: No se subió archivo o formato inválido
+ *       401:
+ *         description: Token inválido o faltante
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/foto-perfil', verifyToken, handleImageUpload, usuarioController.subirFotoPerfil);
+
+/**
+ * @swagger
+ * /api/usuarios/foto-perfil:
+ *   delete:
+ *     summary: Eliminar foto de perfil
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Foto de perfil eliminada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 mensaje:
+ *                   type: string
+ *                   example: "Foto de perfil eliminada exitosamente"
+ *       401:
+ *         description: Token inválido o faltante
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete('/foto-perfil', verifyToken, usuarioController.eliminarFotoPerfil);
 
 module.exports = router;
