@@ -7,6 +7,11 @@ require('dotenv').config();
 
 const app = express();
 
+// Configurar trust proxy para Render (necesario para rate limiting)
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', true);
+}
+
 // Configurar Swagger
 const swaggerSetup = require('./config/swagger.config');
 
@@ -19,8 +24,7 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            imgSrc: ["'self'", "data:", "*"],
-            crossOriginEmbedderPolicy: false
+            imgSrc: ["'self'", "data:", "*"]
         }
     }
 }));
