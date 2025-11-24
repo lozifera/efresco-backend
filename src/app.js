@@ -75,7 +75,7 @@ app.use(cors({
         'https://efresco-backend.onrender.com'
     ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
@@ -143,10 +143,14 @@ app.get('/test-images.html', (req, res) => {
                 <h2>2. Test de CORS</h2>
                 <button onclick="testCORS()">Test CORS desde Frontend</button>
                 <div id="corsResult"></div>
+                
+                <h2>3. Test de Método PATCH</h2>
+                <button onclick="testPATCH()">Test Método PATCH</button>
+                <div id="patchResult"></div>
             </div>
             
             <div class="test-section">
-                <h2>3. Upload Test</h2>
+                <h2>4. Upload Test</h2>
                 <input type="file" id="fileInput" accept="image/*">
                 <button onclick="testUpload()">Subir Imagen de Prueba</button>
                 <div id="uploadResult"></div>
@@ -179,6 +183,31 @@ app.get('/test-images.html', (req, res) => {
                     result.className = 'success';
                 } catch (error) {
                     result.innerHTML = '❌ Error CORS: ' + error.message;
+                    result.className = 'error';
+                }
+            }
+            
+            async function testPATCH() {
+                const result = document.getElementById('patchResult');
+                try {
+                    const response = await fetch('/debug/test-patch', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ test: 'patch funcionando' })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        result.innerHTML = '✅ Método PATCH funcionando - ' + data.mensaje;
+                        result.className = 'success';
+                    } else {
+                        result.innerHTML = '❌ Error PATCH - Status: ' + response.status;
+                        result.className = 'error';
+                    }
+                } catch (error) {
+                    result.innerHTML = '❌ Error PATCH: ' + error.message;
                     result.className = 'error';
                 }
             }
@@ -326,6 +355,17 @@ app.post('/api/test-upload', uploadTest.single('imagen'), (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Error en upload', message: error.message });
     }
+});
+
+// Endpoint de prueba para método PATCH
+app.patch('/debug/test-patch', (req, res) => {
+    res.json({
+        mensaje: 'Método PATCH funcionando correctamente',
+        timestamp: new Date().toISOString(),
+        datos_recibidos: req.body,
+        metodo: req.method,
+        url: req.url
+    });
 });
 
 // Usar rutas
