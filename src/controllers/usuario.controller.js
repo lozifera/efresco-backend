@@ -533,9 +533,8 @@ const subirFotoPerfil = async (req, res) => {
             });
         }
 
-        // Construir URL de la imagen
-        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
-        const foto_perfil_url = `${baseUrl}/uploads/${req.file.filename}`;
+        // Con Cloudinary, req.file.path contiene la URL segura de la imagen
+        const foto_perfil_url = req.file.path;
 
         // Actualizar URL de foto en la base de datos
         await usuario.update({
@@ -550,7 +549,8 @@ const subirFotoPerfil = async (req, res) => {
             file_info: {
                 filename: req.file.filename,
                 size: req.file.size,
-                mimetype: req.file.mimetype
+                mimetype: req.file.mimetype,
+                cloudinary_id: req.file.public_id
             }
         });
 

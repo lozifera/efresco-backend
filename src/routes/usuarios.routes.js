@@ -5,7 +5,7 @@ const router = express.Router();
 const usuarioController = require('../controllers/usuario.controller');
 const { verifyToken, checkRole } = require('../middlewares/auth.middleware');
 const { handleValidationErrors } = require('../middlewares/validation.middleware');
-const { handleImageUpload } = require('../middlewares/upload.middleware');
+const { uploadToCloudinary } = require('../middlewares/cloudinary.middleware');
 
 // Validaciones
 const validarRegistro = [
@@ -445,7 +445,7 @@ router.post('/restablecer-password', validarRestablecerPassword, usuarioControll
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/foto-perfil', verifyToken, handleImageUpload, usuarioController.subirFotoPerfil);
+router.post('/foto-perfil', verifyToken, uploadToCloudinary, usuarioController.subirFotoPerfil);
 
 /**
  * @swagger
