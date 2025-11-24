@@ -519,7 +519,12 @@ const restablecerPassword = async (req, res) => {
  */
 const subirFotoPerfil = async (req, res) => {
     try {
+        console.log('🔍 DEBUG - Iniciando subida de foto');
+        console.log('🔍 DEBUG - req.file:', req.file);
+        console.log('🔍 DEBUG - Usuario ID:', req.usuario?.id_usuario);
+        
         if (!req.file) {
+            console.log('❌ No se encontró archivo en req.file');
             return res.status(400).json({
                 error: 'No se ha subido ningún archivo'
             });
@@ -528,6 +533,7 @@ const subirFotoPerfil = async (req, res) => {
         const usuario = await Usuario.findByPk(req.usuario.id_usuario);
         
         if (!usuario) {
+            console.log('❌ Usuario no encontrado:', req.usuario.id_usuario);
             return res.status(404).json({
                 error: 'Usuario no encontrado'
             });
@@ -535,6 +541,7 @@ const subirFotoPerfil = async (req, res) => {
 
         // Con Cloudinary, req.file.path contiene la URL segura de la imagen
         const foto_perfil_url = req.file.path;
+        console.log('🔍 DEBUG - URL de Cloudinary:', foto_perfil_url);
 
         // Actualizar URL de foto en la base de datos
         await usuario.update({
@@ -556,9 +563,11 @@ const subirFotoPerfil = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Error subiendo foto de perfil:', error);
+        console.error('❌ Stack:', error.stack);
         res.status(500).json({
             error: 'Error interno del servidor',
-            details: error.message
+            details: error.message,
+            debug: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
