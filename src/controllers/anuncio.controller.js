@@ -5,23 +5,22 @@ const { Op } = require('sequelize');
  * Crear anuncio de venta
  */
 const crearAnuncioVenta = async (req, res) => {
-        const { 
-            page = 1, 
-            limit = 20, 
-            search, 
-            categoria, 
-            unidad_medida,
-            precio_min,
-            precio_max 
-        } = req.query;
-        
-        const offset = (page - 1) * limit;
-        // Solo mostrar anuncios activos (no vendidos)
-        const whereClause = { estado: 'activo' };
-        const includes = [{
-            model: Categoria,
-            through: { attributes: [] }
-        }];
+    try {
+        const {
+            id_producto,
+            cantidad,
+            unidad,
+            precio,
+            descripcion,
+            ubicacion,
+            ubicacion_lat,
+            ubicacion_lng
+        } = req.body;
+
+        const nuevoAnuncio = await AnuncioVenta.create({
+            id_usuario: req.usuario.id_usuario,
+            id_producto,
+            cantidad,
             unidad,
             precio,
             descripcion,
@@ -47,7 +46,6 @@ const crearAnuncioVenta = async (req, res) => {
             mensaje: 'Anuncio de venta creado exitosamente',
             anuncio: anuncioCompleto
         });
-
     } catch (error) {
         res.status(500).json({
             error: 'Error al crear anuncio de venta',
