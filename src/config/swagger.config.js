@@ -5,41 +5,28 @@ const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: '🌱 EFresco API - Plataforma Agrícola',
+            title: 'EFresco API - Plataforma Agrícola',
             version: '2.0.0',
             description: `
-                ## 🚀 API Completa para Plataforma de Comercio Agrícola B2B
+                API completa para plataforma de comercio agrícola B2B.
                 
-                **EFresco** es una plataforma innovadora que conecta productores agrícolas con compradores,
-                facilitando el comercio de productos frescos de manera eficiente y segura.
+                **Características principales:**
+                - Gestión de usuarios con roles (cliente, vendedor, administrador)
+                - Catálogo de productos agrícolas con imágenes
+                - Sistema de anuncios de compra y venta
+                - Chat en tiempo real entre usuarios
+                - Sistema de reputación y comentarios
+                - Membresías premium para vendedores
+                - Pagos QR integrados
+                - Panel de administración completo
                 
-                ### 🔑 Características principales:
-                - 👥 **Gestión de usuarios** con roles (cliente, vendedor, administrador)
-                - 📦 **Catálogo de productos** agrícolas con imágenes
-                - 💰 **Sistema de anuncios** de compra y venta
-                - 💬 **Chat en tiempo real** entre usuarios
-                - ⭐ **Sistema de reputación** y comentarios
-                - 🏆 **Membresías premium** para vendedores
-                - 💳 **Pagos QR** integrados
-                - 🔧 **Panel de administración** completo
-                
-                ### 🛡️ Autenticación:
+                **Autenticación:**
                 La mayoría de endpoints requieren autenticación JWT.
                 Usa el botón "Authorize" para añadir tu token.
-                
-                ### 📱 Almacenamiento:
-                - **Imágenes**: Cloudinary (permanente)
-                - **Base de datos**: PostgreSQL
-                - **Deploy**: Render.com
             `,
             contact: {
-                name: '🌱 EFresco Development Team',
-                email: 'dev@efresco.com',
-                url: 'https://efresco.com'
-            },
-            license: {
-                name: 'MIT License',
-                url: 'https://opensource.org/licenses/MIT'
+                name: 'EFresco Development Team',
+                email: 'dev@efresco.com'
             }
         },
         servers: [
@@ -48,49 +35,49 @@ const options = {
                     ? 'https://efresco-backend.onrender.com'
                     : `http://localhost:${process.env.PORT || 3001}`,
                 description: process.env.NODE_ENV === 'production' 
-                    ? '🚀 Servidor de Producción (Render)'
-                    : '🛠️ Servidor de Desarrollo Local'
+                    ? 'Servidor de Producción (Render)'
+                    : 'Servidor de Desarrollo Local'
             }
         ],
         tags: [
             {
-                name: '👥 Usuarios',
+                name: 'Usuarios',
                 description: 'Registro, autenticación y gestión de perfiles de usuario'
             },
             {
-                name: '🔧 Admin - Usuarios', 
-                description: '🛡️ Administración completa de usuarios (Solo Admin)'
+                name: 'Admin - Usuarios', 
+                description: 'Administración completa de usuarios (Solo Admin)'
             },
             {
-                name: '📦 Productos',
+                name: 'Productos',
                 description: 'Gestión del catálogo de productos agrícolas'
             },
             {
-                name: '📢 Anuncios',
+                name: 'Anuncios',
                 description: 'Anuncios de compra y venta de productos'
             },
             {
-                name: '🛒 Pedidos',
+                name: 'Pedidos',
                 description: 'Gestión de pedidos y transacciones'
             },
             {
-                name: '💬 Chat',
+                name: 'Chat',
                 description: 'Sistema de mensajería entre usuarios'
             },
             {
-                name: '⭐ Reputación',
+                name: 'Reputación',
                 description: 'Sistema de calificaciones y comentarios'
             },
             {
-                name: '❤️ Favoritos',
+                name: 'Favoritos',
                 description: 'Productos y vendedores favoritos'
             },
             {
-                name: '🏆 Membresías',
+                name: 'Membresías',
                 description: 'Planes premium para vendedores'
             },
             {
-                name: '💳 Pagos QR',
+                name: 'Pagos QR',
                 description: 'Códigos QR para pagos'
             }
         ],
@@ -100,7 +87,7 @@ const options = {
                     type: 'http',
                     scheme: 'bearer',
                     bearerFormat: 'JWT',
-                    description: '🔑 Ingresa tu token JWT aquí. Formato: Bearer <tu_token>'
+                    description: 'Ingresa tu token JWT aquí. Formato: Bearer <tu_token>'
                 }
             },
             schemas: {
@@ -235,88 +222,62 @@ const options = {
 const specs = swaggerJSDoc(options);
 
 const swaggerSetup = (app) => {
-    // CSS personalizado para mejor apariencia
+    // CSS personalizado simple y profesional
     const customCss = `
-        .swagger-ui .topbar { display: none }
-        .swagger-ui { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .swagger-ui .info { margin: 50px 0; }
+        .swagger-ui .topbar { display: none; }
+        .swagger-ui { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+        }
+        .swagger-ui .info { 
+            margin: 30px 0; 
+        }
         .swagger-ui .info .title {
-            font-size: 36px;
-            color: #2c5530;
-            text-align: center;
+            font-size: 28px;
+            color: #3b4151;
             margin-bottom: 10px;
         }
         .swagger-ui .info .description {
-            font-size: 16px;
-            line-height: 1.6;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #4CAF50;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #3b4151;
         }
         .swagger-ui .scheme-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border: 1px solid #d3d3d3;
         }
-        .swagger-ui .opblock.opblock-get .opblock-summary {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        .swagger-ui .btn.authorize {
+            background: #4990e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
         }
-        .swagger-ui .opblock.opblock-post .opblock-summary {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-        .swagger-ui .opblock.opblock-put .opblock-summary {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-        .swagger-ui .opblock.opblock-patch .opblock-summary {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-        }
-        .swagger-ui .opblock.opblock-delete .opblock-summary {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        .swagger-ui .btn.try-out {
+            background: #61affe;
+            color: white;
+            border: 1px solid #61affe;
+            border-radius: 4px;
         }
         .swagger-ui .opblock-tag {
             font-size: 18px;
-            font-weight: bold;
-            padding: 10px 0;
-            border-bottom: 2px solid #4CAF50;
-            margin-bottom: 15px;
-            color: #2c5530;
-        }
-        .swagger-ui .btn.authorize {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-weight: bold;
-        }
-        .swagger-ui .btn.try-out {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            border: none;
-            border-radius: 20px;
-        }
-        .swagger-ui .response-col_description {
-            background: #f8f9fa;
-            border-radius: 5px;
-            padding: 10px;
+            font-weight: 600;
+            color: #3b4151;
+            margin: 20px 0 10px 0;
         }
     `;
     
     const swaggerOptions = {
         customCss,
-        customSiteTitle: '🌱 EFresco API - Documentación Completa',
-        customfavIcon: 'https://cdn-icons-png.flaticon.com/512/628/628283.png',
+        customSiteTitle: 'EFresco API - Documentación',
         swaggerOptions: {
             persistAuthorization: true,
             displayRequestDuration: true,
             docExpansion: 'none',
             filter: true,
-            showExtensions: true,
-            showCommonExtensions: true,
-            tagsSorter: 'alpha',
-            operationsSorter: 'alpha'
+            tagsSorter: 'alpha'
         }
     };
     
@@ -332,7 +293,7 @@ const swaggerSetup = (app) => {
     // Ruta de ayuda
     app.get('/api-help', (req, res) => {
         res.json({
-            mensaje: '🌱 Bienvenido a EFresco API',
+            mensaje: 'Bienvenido a EFresco API',
             documentacion: `${req.protocol}://${req.get('host')}/api-docs`,
             version: specs.info.version,
             endpoints_principales: {
@@ -340,8 +301,7 @@ const swaggerSetup = (app) => {
                 productos: '/api/productos', 
                 admin: '/api/usuarios/admin',
                 auth: '/api/usuarios/login'
-            },
-            nota: 'Visita /api-docs para la documentación completa con ejemplos'
+            }
         });
     });
 };

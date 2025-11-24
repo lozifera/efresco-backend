@@ -971,7 +971,7 @@ router.post('/restablecer-password', validarRestablecerPassword, usuarioControll
  *       ⚠️ **Límites:**
  *       - Tamaño máximo: **10MB**
  *       - Solo imágenes (no documentos)
- *     tags: [👥 Usuarios]
+ *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
