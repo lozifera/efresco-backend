@@ -1,5 +1,4 @@
 const { Chat, Mensaje, ChatbotLog, Usuario } = require('../models');
-
 /**
  * @desc    Crear nuevo chat
  * @route   POST /api/chat

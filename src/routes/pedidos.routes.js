@@ -9,8 +9,14 @@ const {
     obtenerPedidoPorId,
     obtenerPedidosUsuario,
     actualizarPedido,
-    cancelarPedido
+    cancelarPedido,
+    pagarPedido
 } = require('../controllers/pedido.controller');
+// Simular pago de pedido
+router.post('/:id/pagar', 
+    verifyToken,
+    pagarPedido
+);
 
 // Crear pedido
 router.post('/', 

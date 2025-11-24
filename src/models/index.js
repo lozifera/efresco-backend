@@ -17,9 +17,7 @@ const Reputacion = require('./Reputacion')(sequelize);
 const Favoritos = require('./Favoritos')(sequelize);
 const Membresia = require('./Membresia')(sequelize);
 const UsuarioMembresia = require('./UsuarioMembresia')(sequelize);
-const Chat = require('./Chat')(sequelize);
-const Mensaje = require('./Mensaje')(sequelize);
-const ChatbotLog = require('./ChatbotLog')(sequelize);
+
 
 // Definir asociaciones/relaciones
 

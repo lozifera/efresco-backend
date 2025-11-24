@@ -14,3 +14,4 @@ module.exports = {
     await queryInterface.removeColumn('chat', 'tipo');
   }
 };
+

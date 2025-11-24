@@ -316,11 +316,55 @@ const cancelarPedido = async (req, res) => {
     }
 };
 
+
+// Simular pago de pedido
+const { AnuncioVenta } = require('../models');
+const pagarPedido = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pedido = await Pedido.findByPk(id);
+        if (!pedido) {
+            return res.status(404).json({
+                success: false,
+                message: 'Pedido no encontrado'
+            });
+        }
+        if (pedido.estado === 'pagado') {
+            return res.status(400).json({
+                success: false,
+                message: 'El pedido ya está pagado'
+            });
+        }
+        // Cambiar estado del pedido
+        await pedido.update({ estado: 'pagado' });
+        // Cambiar estado del anuncio a vendido (si es venta)
+        if (pedido.tipo_anuncio === 'venta' && pedido.id_anuncio) {
+            const anuncio = await AnuncioVenta.findByPk(pedido.id_anuncio);
+            if (anuncio && anuncio.estado !== 'vendido') {
+                await anuncio.update({ estado: 'vendido' });
+            }
+        }
+        res.json({
+            success: true,
+            message: 'Pago simulado exitosamente. Pedido pagado y anuncio marcado como vendido.',
+            data: pedido
+        });
+    } catch (error) {
+        console.error('Error al simular pago:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     crearPedido,
     obtenerPedidos,
     obtenerPedidoPorId,
     obtenerPedidosUsuario,
     actualizarPedido,
-    cancelarPedido
+    cancelarPedido,
+    pagarPedido
 };

@@ -112,3 +112,4 @@ router.post('/chatbot',
 router.get('/chatbot/historial', verifyToken, obtenerHistorialChatbot);
 
 module.exports = router;
+
