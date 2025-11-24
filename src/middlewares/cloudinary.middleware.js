@@ -72,8 +72,29 @@ const handleCloudinaryUpload = (req, res, next) => {
     });
 };
 
+// Función específica para productos (campo 'imagen')
+const uploadImagenProducto = upload.single('imagen');
+
+const handleProductImageUpload = (req, res, next) => {
+    console.log('🔍 DEBUG - Upload imagen producto');
+    
+    uploadImagenProducto(req, res, (err) => {
+        if (err) {
+            console.error('❌ Error subiendo imagen producto:', err);
+            return res.status(400).json({
+                error: 'Error al subir imagen del producto',
+                details: err.message
+            });
+        }
+        
+        console.log('✅ Upload imagen producto exitoso');
+        next();
+    });
+};
+
 module.exports = {
     cloudinary,
     uploadToCloudinary: uploadSingleToCloudinary,
-    handleCloudinaryUpload
+    handleCloudinaryUpload,
+    handleProductImageUpload
 };

@@ -5,7 +5,7 @@ const router = express.Router();
 const productoController = require('../controllers/producto.controller');
 const { verifyToken, checkRole } = require('../middlewares/auth.middleware');
 const { handleValidationErrors } = require('../middlewares/validation.middleware');
-const { handleImageUpload } = require('../middlewares/upload.middleware');
+const { handleProductImageUpload } = require('../middlewares/cloudinary.middleware');
 
 // Validaciones
 const validarCrearProducto = [
@@ -300,7 +300,7 @@ router.delete('/:id',
 router.post('/:id/imagen', 
     verifyToken,
     validarId,
-    handleImageUpload,
+    handleProductImageUpload,
     productoController.subirImagenProducto
 );
 

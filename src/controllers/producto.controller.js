@@ -259,6 +259,9 @@ const subirImagenProducto = async (req, res) => {
     try {
         const { id } = req.params;
         
+        console.log('🔍 DEBUG - Subiendo imagen producto ID:', id);
+        console.log('🔍 DEBUG - req.file:', req.file);
+        
         if (!req.file) {
             return res.status(400).json({
                 success: false,
@@ -269,17 +272,14 @@ const subirImagenProducto = async (req, res) => {
         // Verificar que el producto existe
         const producto = await Producto.findByPk(id);
         if (!producto) {
-            // Eliminar archivo subido si el producto no existe
-            fs.unlinkSync(req.file.path);
             return res.status(404).json({
                 success: false,
                 message: 'Producto no encontrado'
             });
         }
 
-        // Crear URL completa para la imagen
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const imagenUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        // Con Cloudinary, req.file.path contiene la URL segura de la imagen
+        const imagenUrl = req.file.path;
         
         // Calcular tamaño en MB
         const tamañoMB = (req.file.size / 1024 / 1024).toFixed(2);
@@ -290,13 +290,16 @@ const subirImagenProducto = async (req, res) => {
             tamaño_imagen_mb: tamañoMB
         });
 
+        console.log(`📷 Imagen de producto actualizada: ${imagenUrl}`);
+
         res.json({
             success: true,
             message: 'Imagen subida exitosamente',
             data: {
                 imagen_url: imagenUrl,
                 tamaño_mb: tamañoMB,
-                nombre_archivo: req.file.filename
+                nombre_archivo: req.file.filename,
+                cloudinary_id: req.file.public_id
             }
         });
 
