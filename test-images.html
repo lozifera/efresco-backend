@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test de Imágenes EFresco</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        img { border: 1px solid #ccc; margin: 10px; }
+        .test-section { margin: 20px 0; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Imágenes EFresco</h1>
+    
+    <div class="test-section">
+        <h2>1. Imagen de Prueba Local</h2>
+        <img src="/uploads/test-image.svg" alt="Test Image" width="200">
+        <p>URL: <code>/uploads/test-image.svg</code></p>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test desde Frontend</h2>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        async function testCORS() {
+            const result = document.getElementById('result');
+            try {
+                const response = await fetch('/uploads/test-image.svg');
+                if (response.ok) {
+                    result.innerHTML = '✅ CORS funcionando correctamente';
+                    result.style.color = 'green';
+                } else {
+                    result.innerHTML = '❌ Error: ' + response.status;
+                    result.style.color = 'red';
+                }
+            } catch (error) {
+                result.innerHTML = '❌ Error CORS: ' + error.message;
+                result.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>

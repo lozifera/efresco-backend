@@ -99,8 +99,115 @@ app.get('/', (req, res) => {
         mensaje: 'API EFresco funcionando correctamente',
         version: '1.0.0',
         timestamp: new Date().toISOString(),
-        documentacion: '/api-docs'
+        documentacion: '/api-docs',
+        debug: '/debug/uploads'
     });
+});
+
+// Página de prueba para imágenes
+app.get('/test-images.html', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test de Imágenes EFresco</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+            img { border: 1px solid #ccc; margin: 10px; border-radius: 4px; }
+            .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+            button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+            button:hover { background: #45a049; }
+            .success { color: #4CAF50; font-weight: bold; }
+            .error { color: #f44336; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🧪 Test de Imágenes EFresco</h1>
+            
+            <div class="test-section">
+                <h2>1. Estado del Servidor</h2>
+                <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+                <p><strong>NODE_ENV:</strong> ${process.env.NODE_ENV}</p>
+                <button onclick="checkUploadsDir()">Verificar Directorio Uploads</button>
+                <div id="uploadsResult"></div>
+            </div>
+            
+            <div class="test-section">
+                <h2>2. Test de CORS</h2>
+                <button onclick="testCORS()">Test CORS desde Frontend</button>
+                <div id="corsResult"></div>
+            </div>
+            
+            <div class="test-section">
+                <h2>3. Upload Test</h2>
+                <input type="file" id="fileInput" accept="image/*">
+                <button onclick="testUpload()">Subir Imagen de Prueba</button>
+                <div id="uploadResult"></div>
+            </div>
+        </div>
+        
+        <script>
+            async function checkUploadsDir() {
+                const result = document.getElementById('uploadsResult');
+                try {
+                    const response = await fetch('/debug/uploads');
+                    const data = await response.json();
+                    result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    result.className = response.ok ? 'success' : 'error';
+                } catch (error) {
+                    result.innerHTML = '❌ Error: ' + error.message;
+                    result.className = 'error';
+                }
+            }
+            
+            async function testCORS() {
+                const result = document.getElementById('corsResult');
+                try {
+                    const response = await fetch('/debug/uploads', {
+                        headers: {
+                            'Origin': 'http://localhost:4200'
+                        }
+                    });
+                    result.innerHTML = '✅ CORS funcionando correctamente - Status: ' + response.status;
+                    result.className = 'success';
+                } catch (error) {
+                    result.innerHTML = '❌ Error CORS: ' + error.message;
+                    result.className = 'error';
+                }
+            }
+            
+            async function testUpload() {
+                const fileInput = document.getElementById('fileInput');
+                const result = document.getElementById('uploadResult');
+                
+                if (!fileInput.files[0]) {
+                    result.innerHTML = '❌ Selecciona una imagen primero';
+                    result.className = 'error';
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('imagen', fileInput.files[0]);
+                
+                try {
+                    const response = await fetch('/api/test-upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    result.className = response.ok ? 'success' : 'error';
+                } catch (error) {
+                    result.innerHTML = '❌ Error upload: ' + error.message;
+                    result.className = 'error';
+                }
+            }
+        </script>
+    </body>
+    </html>
+    `);
 });
 
 app.get('/health', (req, res) => {
@@ -123,11 +230,49 @@ app.get('/uploads/:filename', (req, res) => {
     // Verificar si el archivo existe
     const fs = require('fs');
     if (!fs.existsSync(filePath)) {
-        return res.status(404).json({ error: 'Imagen no encontrada' });
+        console.log(`❌ Imagen no encontrada: ${filename} en ${filePath}`);
+        return res.status(404).json({ 
+            error: 'Imagen no encontrada',
+            filename: filename,
+            path: filePath,
+            exists: false
+        });
     }
     
+    console.log(`✅ Enviando imagen: ${filename}`);
     // Enviar archivo
     res.sendFile(filePath);
+});
+
+// Endpoint para debug - listar archivos en uploads
+app.get('/debug/uploads', (req, res) => {
+    const fs = require('fs');
+    const uploadsDir = path.join(__dirname, 'public/uploads');
+    
+    try {
+        // Verificar si el directorio existe
+        if (!fs.existsSync(uploadsDir)) {
+            return res.json({
+                message: 'Directorio uploads no existe',
+                path: uploadsDir,
+                files: []
+            });
+        }
+        
+        // Listar archivos
+        const files = fs.readdirSync(uploadsDir);
+        res.json({
+            message: 'Archivos en directorio uploads',
+            path: uploadsDir,
+            totalFiles: files.length,
+            files: files
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error leyendo directorio uploads',
+            message: error.message
+        });
+    }
 });
 
 // Importar rutas
@@ -141,6 +286,42 @@ const reputacionRoutes = require('./routes/reputacion.routes');
 const favoritosRoutes = require('./routes/favoritos.routes');
 const membresiasRoutes = require('./routes/membresias.routes');
 const chatRoutes = require('./routes/chat.routes');
+
+// Endpoint de test para upload
+const multer = require('multer');
+const uploadTest = multer({
+    storage: multer.diskStorage({
+        destination: (req, file, cb) => {
+            cb(null, path.join(__dirname, 'public/uploads'));
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            cb(null, 'test-' + uniqueSuffix + path.extname(file.originalname));
+        }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+app.post('/api/test-upload', uploadTest.single('imagen'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No se subió ningún archivo' });
+        }
+        
+        const imageUrl = `/uploads/${req.file.filename}`;
+        res.json({
+            mensaje: 'Imagen subida exitosamente',
+            filename: req.file.filename,
+            originalname: req.file.originalname,
+            size: req.file.size,
+            url: imageUrl,
+            fullUrl: `${req.protocol}://${req.get('host')}${imageUrl}`,
+            path: req.file.path
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Error en upload', message: error.message });
+    }
+});
 
 // Usar rutas
 app.use('/api/usuarios', usuariosRoutes);
