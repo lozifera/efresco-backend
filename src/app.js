@@ -11,12 +11,24 @@ const app = express();
 const swaggerSetup = require('./config/swagger.config');
 
 // Middlewares de seguridad
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { 
+        policy: "cross-origin" 
+    },
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "*"],
+            crossOriginEmbedderPolicy: false
+        }
+    }
+}));
 
-// Rate limiting global
+// Rate limiting global - Configuración por ambiente
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100, // máximo 100 requests por IP
+    max: process.env.NODE_ENV === 'development' ? 1000 : 100, // 1000 en desarrollo, 100 en producción
     message: {
         error: 'Demasiadas peticiones, intenta de nuevo más tarde.'
     }
@@ -27,31 +39,48 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Configuración CORS más específica
+// Middleware específico para Render - Forzar HTTPS y evitar redirecciones
+if (process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        // Forzar HTTPS en Render
+        if (req.header('x-forwarded-proto') !== 'https') {
+            return res.redirect(`https://${req.header('host')}${req.url}`);
+        }
+        
+        // Evitar trailing slash en rutas de archivos estáticos
+        if (req.path.startsWith('/uploads') && req.path.endsWith('/') && req.path.length > 9) {
+            return res.redirect(301, req.path.slice(0, -1));
+        }
+        
+        next();
+    });
+}
+
+// Configuración CORS simple y efectiva
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:5173', '*'],
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:4200',
+        'http://localhost:5173', 
+        'https://efresco-frontend.onrender.com',
+        'https://efresco-backend.onrender.com'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
-// Middleware específico para archivos estáticos con CORS
+
+// Middleware simple para archivos estáticos con CORS
 app.use('/uploads', (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
-    
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
     next();
 });
 
-// Servir archivos estáticos (imágenes)
+// Servir archivos estáticos con CORS simple
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), {
-    setHeaders: (res, _path) => {
+    setHeaders: (res) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     }
@@ -78,16 +107,14 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Endpoint específico para imágenes con CORS
+// Endpoint simple para imágenes con CORS básico
 app.get('/uploads/:filename', (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(__dirname, 'public/uploads', filename);
     
-    // Headers CORS específicos para imágenes
+    // Headers CORS simples pero efectivos
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
     
     // Verificar si el archivo existe
     const fs = require('fs');
@@ -95,7 +122,7 @@ app.get('/uploads/:filename', (req, res) => {
         return res.status(404).json({ error: 'Imagen no encontrada' });
     }
     
-    // Enviar archivo con tipo MIME correcto
+    // Enviar archivo
     res.sendFile(filePath);
 });
 

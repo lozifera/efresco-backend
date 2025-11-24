@@ -1,0 +1,44 @@
+name: efresco-backend
+type: web
+
+# Configuración específica para prevenir redirecciones problemáticas
+buildCommand: npm install
+startCommand: npm start
+env: node
+
+# Variables de entorno requeridas
+envVars:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: 10000
+
+# Configuraciones específicas para archivos estáticos
+routes:
+  - type: rewrite
+    source: /uploads/*
+    destination: /uploads/$1
+    
+# Headers personalizados para CORS
+headers:
+  - source: /uploads/*
+    headers:
+      - key: Access-Control-Allow-Origin
+        value: "*"
+      - key: Cross-Origin-Resource-Policy  
+        value: cross-origin
+      - key: Cross-Origin-Embedder-Policy
+        value: unsafe-none
+      - key: Cache-Control
+        value: public, max-age=31536000
+
+# Configuración de compilación
+build:
+  publishPath: ./
+
+# Configuración de red
+networking:
+  allowedOrigins:
+    - "https://*.onrender.com"
+    - "http://localhost:*"
+    - "https://localhost:*"
