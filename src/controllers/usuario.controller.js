@@ -605,6 +605,228 @@ const eliminarFotoPerfil = async (req, res) => {
     }
 };
 
+/**
+ * Obtener usuario específico (solo admin)
+ */
+const obtenerUsuarioAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const usuario = await Usuario.findByPk(id, {
+            attributes: { exclude: ['password_hash'] },
+            include: [{
+                model: Rol,
+                through: { attributes: [] }
+            }]
+        });
+
+        if (!usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        res.json({
+            ...usuario.toJSON(),
+            roles: usuario.Rols?.map(rol => rol.nombre) || []
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error al obtener usuario',
+            details: error.message
+        });
+    }
+};
+
+/**
+ * Actualizar usuario completo (solo admin)
+ */
+const actualizarUsuarioAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { 
+            nombre, 
+            apellido, 
+            email, 
+            telefono, 
+            direccion,
+            ubicacion_lat,
+            ubicacion_lng,
+            verificado,
+            estado
+        } = req.body;
+
+        // Verificar que el usuario existe
+        const usuario = await Usuario.findByPk(id);
+        if (!usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        // Si se actualiza el email, verificar que no exista otro usuario con ese email
+        if (email && email !== usuario.email) {
+            const emailExistente = await Usuario.findOne({ 
+                where: { 
+                    email,
+                    id_usuario: { [require('sequelize').Op.ne]: id }
+                }
+            });
+            if (emailExistente) {
+                return res.status(400).json({
+                    error: 'El email ya está registrado por otro usuario'
+                });
+            }
+        }
+
+        // Actualizar usuario
+        const datosActualizacion = {};
+        if (nombre !== undefined) datosActualizacion.nombre = nombre;
+        if (apellido !== undefined) datosActualizacion.apellido = apellido;
+        if (email !== undefined) datosActualizacion.email = email;
+        if (telefono !== undefined) datosActualizacion.telefono = telefono;
+        if (direccion !== undefined) datosActualizacion.direccion = direccion;
+        if (ubicacion_lat !== undefined) datosActualizacion.ubicacion_lat = ubicacion_lat;
+        if (ubicacion_lng !== undefined) datosActualizacion.ubicacion_lng = ubicacion_lng;
+        if (verificado !== undefined) datosActualizacion.verificado = verificado;
+        if (estado !== undefined) datosActualizacion.estado = estado;
+
+        await usuario.update(datosActualizacion);
+
+        // Obtener usuario actualizado con roles
+        const usuarioActualizado = await Usuario.findByPk(id, {
+            attributes: { exclude: ['password_hash'] },
+            include: [{
+                model: Rol,
+                through: { attributes: [] }
+            }]
+        });
+
+        res.json({
+            mensaje: 'Usuario actualizado exitosamente',
+            usuario: {
+                ...usuarioActualizado.toJSON(),
+                roles: usuarioActualizado.Rols?.map(rol => rol.nombre) || []
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error al actualizar usuario',
+            details: error.message
+        });
+    }
+};
+
+/**
+ * Cambiar estado o verificación del usuario (solo admin)
+ */
+const cambiarEstadoUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { verificado, estado } = req.body;
+
+        // Verificar que al menos un campo esté presente
+        if (verificado === undefined && estado === undefined) {
+            return res.status(400).json({
+                error: 'Debe proporcionar al menos un campo: verificado o estado'
+            });
+        }
+
+        // Verificar que el usuario existe
+        const usuario = await Usuario.findByPk(id);
+        if (!usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        // Preparar datos de actualización
+        const datosActualizacion = {};
+        if (verificado !== undefined) datosActualizacion.verificado = verificado;
+        if (estado !== undefined) datosActualizacion.estado = estado;
+
+        // Actualizar usuario
+        await usuario.update(datosActualizacion);
+
+        res.json({
+            mensaje: 'Estado actualizado exitosamente',
+            usuario: {
+                id_usuario: usuario.id_usuario,
+                verificado: usuario.verificado,
+                estado: usuario.estado
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error al cambiar estado del usuario',
+            details: error.message
+        });
+    }
+};
+
+/**
+ * Eliminar usuario (solo admin)
+ */
+const eliminarUsuarioAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verificar que el usuario existe
+        const usuario = await Usuario.findByPk(id);
+        if (!usuario) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        // Verificar si el usuario tiene datos relacionados que impidan su eliminación
+        // Por ejemplo, si tiene productos, pedidos, chats, etc.
+        const { Producto, Pedido, Chat } = require('../models');
+        
+        const productosCount = await Producto.count({ where: { id_usuario: id } });
+        const pedidosCount = await Pedido.count({ where: { id_usuario: id } });
+        const chatsCount = await Chat.count({ 
+            where: { 
+                [require('sequelize').Op.or]: [
+                    { id_usuario_1: id },
+                    { id_usuario_2: id }
+                ]
+            }
+        });
+
+        if (productosCount > 0 || pedidosCount > 0 || chatsCount > 0) {
+            return res.status(409).json({
+                error: 'No se puede eliminar el usuario porque tiene datos relacionados',
+                detalles: {
+                    productos: productosCount,
+                    pedidos: pedidosCount,
+                    chats: chatsCount
+                },
+                sugerencia: 'Considere desactivar el usuario en lugar de eliminarlo'
+            });
+        }
+
+        // Eliminar relaciones de roles primero
+        await UsuarioRol.destroy({ where: { id_usuario: id } });
+        
+        // Eliminar usuario
+        await usuario.destroy();
+
+        res.json({
+            mensaje: 'Usuario eliminado exitosamente'
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error al eliminar usuario',
+            details: error.message
+        });
+    }
+};
+
 module.exports = {
     registrarUsuario,
     iniciarSesion,
@@ -612,6 +834,10 @@ module.exports = {
     obtenerUsuarioPorId,
     actualizarPerfil,
     listarUsuarios,
+    obtenerUsuarioAdmin,
+    actualizarUsuarioAdmin,
+    cambiarEstadoUsuario,
+    eliminarUsuarioAdmin,
     solicitarRecuperacionPassword,
     verificarTokenRecuperacion,
     restablecerPassword,
