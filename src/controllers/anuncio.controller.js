@@ -337,11 +337,47 @@ const actualizarEstadoAnuncio = async (req, res) => {
     }
 };
 
+
+/**
+ * Confirmar compra/venta de un anuncio
+ */
+const confirmarAnuncio = async (req, res) => {
+    try {
+        const { tipo, id } = req.params;
+        const Model = tipo === 'venta' ? AnuncioVenta : AnuncioCompra;
+
+        // Buscar el anuncio
+        const anuncio = await Model.findByPk(id);
+        if (!anuncio) {
+            return res.status(404).json({
+                error: 'Anuncio no encontrado'
+            });
+        }
+
+        // Cambiar estado a 'vendido' (o 'cerrado' para compra)
+        const nuevoEstado = tipo === 'venta' ? 'vendido' : 'cerrado';
+        await anuncio.update({ estado: nuevoEstado });
+
+        // (Opcional) Aquí podrías notificar a ambos usuarios
+
+        res.json({
+            mensaje: `Anuncio ${tipo} confirmado exitosamente`,
+            anuncio
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error al confirmar anuncio',
+            details: error.message
+        });
+    }
+};
+
 module.exports = {
     crearAnuncioVenta,
     crearAnuncioCompra,
     listarAnunciosVenta,
     listarAnunciosCompra,
     obtenerMisAnuncios,
-    actualizarEstadoAnuncio
+    actualizarEstadoAnuncio,
+    confirmarAnuncio
 };

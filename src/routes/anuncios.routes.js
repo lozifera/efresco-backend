@@ -319,6 +319,41 @@ router.get('/mis-anuncios', verifyToken, anuncioController.obtenerMisAnuncios);
  *       404:
  *         description: Anuncio no encontrado
  */
+
+// Confirmar compra/venta de un anuncio
+/**
+ * @swagger
+ * /api/anuncios/{tipo}/{id}/confirmar:
+ *   post:
+ *     summary: Confirmar compra/venta de un anuncio
+ *     tags: [Anuncios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tipo
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [venta, compra]
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: false
+ *     responses:
+ *       200:
+ *         description: Anuncio confirmado exitosamente
+ *       404:
+ *         description: Anuncio no encontrado
+ */
+router.post('/:tipo/:id/confirmar', 
+    verifyToken, 
+    anuncioController.confirmarAnuncio
+);
+
 router.put('/:tipo/:id/estado', 
     verifyToken, 
     anuncioController.actualizarEstadoAnuncio
