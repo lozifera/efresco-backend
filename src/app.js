@@ -35,6 +35,11 @@ const limiter = rateLimit({
     max: process.env.NODE_ENV === 'development' ? 1000 : 100, // 1000 en desarrollo, 100 en producción
     message: {
         error: 'Demasiadas peticiones, intenta de nuevo más tarde.'
+    },
+    // Configuración específica para Render
+    trustProxy: true,
+    keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
     }
 });
 app.use('/api/', limiter);

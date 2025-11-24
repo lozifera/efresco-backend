@@ -2,23 +2,36 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// Verificar configuración de Cloudinary
-const requiredVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
-const missingVars = requiredVars.filter(varName => !process.env[varName]);
-
-if (missingVars.length > 0) {
-    console.error('❌ Variables de entorno de Cloudinary faltantes:', missingVars);
-    console.error('📝 Asegúrate de configurar en Render:');
-    missingVars.forEach(varName => console.error(`   ${varName}`));
+// Verificar configuración de Cloudinary - Soporta tanto CLOUDINARY_URL como variables separadas
+if (process.env.CLOUDINARY_URL) {
+    console.log('✅ Cloudinary configurado con CLOUDINARY_URL');
+    console.log('📊 Cloud configurado desde URL unificada');
 } else {
-    console.log('✅ Variables de Cloudinary configuradas correctamente');
+    const requiredVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+    const missingVars = requiredVars.filter(varName => !process.env[varName]);
+
+    if (missingVars.length > 0) {
+        console.error('❌ Variables de entorno de Cloudinary faltantes:', missingVars);
+        console.error('📝 Opción 1 - Usar URL unificada en Render:');
+        console.error('   CLOUDINARY_URL=cloudinary://api_key:api_secret@cloud_name');
+        console.error('📝 Opción 2 - Usar variables separadas:');
+        missingVars.forEach(varName => console.error(`   ${varName}`));
+        console.error('🔧 Variables actuales:');
+        console.error(`   CLOUDINARY_CLOUD_NAME: ${process.env.CLOUDINARY_CLOUD_NAME ? '✅ Configurada' : '❌ Faltante'}`);
+        console.error(`   CLOUDINARY_API_KEY: ${process.env.CLOUDINARY_API_KEY ? '✅ Configurada' : '❌ Faltante'}`);
+        console.error(`   CLOUDINARY_API_SECRET: ${process.env.CLOUDINARY_API_SECRET ? '✅ Configurada' : '❌ Faltante'}`);
+    } else {
+        console.log('✅ Variables de Cloudinary configuradas correctamente (separadas)');
+        console.log('📊 Cloudinary configurado para cloud:', process.env.CLOUDINARY_CLOUD_NAME);
+    }
 }
 
-// Configurar Cloudinary
+// Configurar Cloudinary - funciona automáticamente con CLOUDINARY_URL o variables separadas
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    // Si existe CLOUDINARY_URL, estas se ignoran y se usa la URL automáticamente
 });
 
 // Configurar storage de Cloudinary
