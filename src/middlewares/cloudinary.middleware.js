@@ -42,33 +42,41 @@ const upload = multer({
     }
 });
 
-// Middleware para subir imagen única - CORREGIDO: campo 'image' en lugar de 'imagen'
+// Middleware para subir imagen única - FLEXIBLE: acepta múltiples nombres de campo
 const uploadSingleToCloudinary = upload.single('image');
 
-// Función helper para manejo de errores mejorado
-const handleCloudinaryUpload = (req, res, next) => {
-    console.log('🔍 DEBUG - Iniciando upload a Cloudinary');
-    console.log('🔍 DEBUG - Cloudinary config:', {
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? '✅' : '❌',
-        api_key: process.env.CLOUDINARY_API_KEY ? '✅' : '❌',
-        api_secret: process.env.CLOUDINARY_API_SECRET ? '✅' : '❌'
-    });
+// Middleware flexible que acepta cualquier campo de imagen
+const handleFlexibleCloudinaryUpload = (req, res, next) => {
+    console.log('🔍 DEBUG - Upload flexible iniciado');
+    console.log('🔍 DEBUG - Content-Type:', req.get('Content-Type'));
+    console.log('🔍 DEBUG - Body keys:', Object.keys(req.body || {}));
     
-    uploadSingleToCloudinary(req, res, (err) => {
+    // Usar upload.any() para aceptar cualquier campo
+    const uploadAny = upload.any();
+    
+    uploadAny(req, res, (err) => {
         if (err) {
-            console.error('❌ Error subiendo a Cloudinary:', err);
-            console.error('❌ Tipo de error:', err.name);
-            console.error('❌ Código de error:', err.code);
+            console.error('❌ Error en upload flexible:', err);
             return res.status(400).json({
-                error: 'Error al subir imagen a Cloudinary',
+                error: 'Error al subir imagen',
                 details: err.message,
                 type: err.name
             });
         }
         
-        console.log('✅ Upload a Cloudinary exitoso');
-        console.log('🔍 DEBUG - req.file después de Cloudinary:', req.file);
-        next();
+        // Buscar el primer archivo subido
+        if (req.files && req.files.length > 0) {
+            req.file = req.files[0]; // Asignar el primer archivo como req.file
+            console.log('✅ Archivo encontrado:', req.file.fieldname);
+            console.log('🔍 DEBUG - req.file:', req.file);
+            return next();
+        }
+        
+        console.log('❌ No se encontró archivo en la petición');
+        return res.status(400).json({
+            error: 'No se encontró archivo para subir',
+            hint: 'Asegúrate de enviar un archivo en el FormData'
+        });
     });
 };
 
@@ -95,6 +103,6 @@ const handleProductImageUpload = (req, res, next) => {
 module.exports = {
     cloudinary,
     uploadToCloudinary: uploadSingleToCloudinary,
-    handleCloudinaryUpload,
+    handleCloudinaryUpload: handleFlexibleCloudinaryUpload,
     handleProductImageUpload
 };
