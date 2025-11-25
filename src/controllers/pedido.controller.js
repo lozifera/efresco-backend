@@ -359,6 +359,39 @@ const pagarPedido = async (req, res) => {
     }
 };
 
+// Verificar o marcar como cumplido un pedido manualmente
+const verificarPedido = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { verificado_manualmente, notas_verificacion } = req.body;
+
+        const pedido = await Pedido.findByPk(id);
+        if (!pedido) {
+            return res.status(404).json({
+                success: false,
+                message: 'Pedido no encontrado'
+            });
+        }
+
+        pedido.verificado_manualmente = verificado_manualmente;
+        pedido.notas_verificacion = notas_verificacion;
+        await pedido.save();
+
+        res.json({
+            success: true,
+            message: 'Pedido verificado/cumplido exitosamente',
+            data: pedido
+        });
+    } catch (error) {
+        console.error('Error al verificar pedido:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     crearPedido,
     obtenerPedidos,
@@ -366,5 +399,6 @@ module.exports = {
     obtenerPedidosUsuario,
     actualizarPedido,
     cancelarPedido,
-    pagarPedido
+    pagarPedido,
+    verificarPedido
 };

@@ -44,6 +44,38 @@
  *       200:
  *         description: Pedido creado y pagado exitosamente.
  */
+/**
+ * @swagger
+ * /api/pedidos/{id}/verificar:
+ *   patch:
+ *     summary: Verificar o marcar como cumplido un pedido manualmente.
+ *     tags: [Pedidos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del pedido
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               verificado_manualmente:
+ *                 type: boolean
+ *                 example: true
+ *               notas_verificacion:
+ *                 type: string
+ *                 example: "Pedido entregado y verificado por el vendedor"
+ *     responses:
+ *       200:
+ *         description: Pedido verificado exitosamente.
+ */
 
 const express = require('express');
 const router = express.Router();
@@ -57,7 +89,8 @@ const {
     obtenerPedidosUsuario,
     actualizarPedido,
     cancelarPedido,
-    pagarPedido
+    pagarPedido,
+    verificarPedido
 } = require('../controllers/pedido.controller');
 // Simular pago de pedido
 router.post('/:id/pagar', 
@@ -179,6 +212,25 @@ router.patch('/:id/cancelar',
     ],
     handleValidationErrors,
     cancelarPedido
+);
+
+// Verificar pedido
+router.patch('/:id/verificar', 
+    verifyToken,
+    [
+        param('id')
+            .isInt({ min: 1 })
+            .withMessage('ID del pedido debe ser un entero positivo'),
+        body('verificado_manualmente')
+            .isBoolean()
+            .withMessage('Verificado manualmente debe ser verdadero o falso'),
+        body('notas_verificacion')
+            .optional()
+            .isString()
+            .withMessage('Las notas de verificación deben ser un texto')
+    ],
+    handleValidationErrors,
+    verificarPedido
 );
 
 module.exports = router;
