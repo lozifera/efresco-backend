@@ -177,7 +177,7 @@ router.get('/usuario/:usuarioId',
             .optional()
             .isInt({ min: 1, max: 100 })
             .withMessage('El límite debe ser entre 1 y 100')
-    },
+    ],
     handleValidationErrors,
     obtenerPedidosUsuario
 );
