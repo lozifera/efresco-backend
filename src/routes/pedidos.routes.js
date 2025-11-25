@@ -1,3 +1,50 @@
+/**
+ * @swagger
+ * /api/pedidos/simular-pago-venta:
+ *   post:
+ *     summary: Simula el pago y crea un pedido para un anuncio de venta.
+ *     tags: [Pedidos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_anuncio_venta:
+ *                 type: integer
+ *                 example: 123
+ *               id_usuario_comprador:
+ *                 type: integer
+ *                 example: 456
+ *     responses:
+ *       200:
+ *         description: Pedido creado y pagado exitosamente.
+ */
+/**
+ * @swagger
+ * /api/pedidos/simular-pago-compra:
+ *   post:
+ *     summary: Simula el pago y crea un pedido para un anuncio de compra.
+ *     tags: [Pedidos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_anuncio_compra:
+ *                 type: integer
+ *                 example: 789
+ *               id_usuario_vendedor:
+ *                 type: integer
+ *                 example: 456
+ *     responses:
+ *       200:
+ *         description: Pedido creado y pagado exitosamente.
+ */
+
 const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
@@ -97,7 +144,7 @@ router.get('/usuario/:usuarioId',
             .optional()
             .isInt({ min: 1, max: 100 })
             .withMessage('El límite debe ser entre 1 y 100')
-    ],
+    },
     handleValidationErrors,
     obtenerPedidosUsuario
 );
