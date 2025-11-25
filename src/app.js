@@ -36,11 +36,8 @@ const limiter = rateLimit({
     message: {
         error: 'Demasiadas peticiones, intenta de nuevo más tarde.'
     },
-    // Configuración específica para Render
-    trustProxy: true,
-    keyGenerator: (req) => {
-        return req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
-    }
+    // trustProxy eliminado porque no es una opción válida aquí
+    // keyGenerator eliminado para usar el valor por defecto seguro para IPv4/IPv6
 });
 app.use('/api/', limiter);
 

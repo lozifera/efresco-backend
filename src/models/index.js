@@ -109,23 +109,6 @@ Membresia.belongsToMany(Usuario, {
     otherKey: 'id_usuario' 
 });
 
-// Usuario - Chat (dos usuarios por chat)
-Usuario.hasMany(Chat, { as: 'ChatsComoUsuario1', foreignKey: 'id_usuario_1' });
-Usuario.hasMany(Chat, { as: 'ChatsComoUsuario2', foreignKey: 'id_usuario_2' });
-Chat.belongsTo(Usuario, { as: 'Usuario1', foreignKey: 'id_usuario_1' });
-Chat.belongsTo(Usuario, { as: 'Usuario2', foreignKey: 'id_usuario_2' });
-
-// Chat - Mensaje (uno a muchos)
-Chat.hasMany(Mensaje, { foreignKey: 'id_chat' });
-Mensaje.belongsTo(Chat, { foreignKey: 'id_chat' });
-
-// Usuario - Mensaje (uno a muchos)
-Usuario.hasMany(Mensaje, { foreignKey: 'id_usuario' });
-Mensaje.belongsTo(Usuario, { foreignKey: 'id_usuario' });
-
-// Usuario - ChatbotLog (uno a muchos)
-Usuario.hasMany(ChatbotLog, { foreignKey: 'id_usuario' });
-ChatbotLog.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
 // Exportar modelos y sequelize
 module.exports = {
@@ -144,8 +127,5 @@ module.exports = {
     Reputacion,
     Favoritos,
     Membresia,
-    UsuarioMembresia,
-    Chat,
-    Mensaje,
-    ChatbotLog
+    UsuarioMembresia
 };

@@ -15,7 +15,7 @@ async function initProduction() {
         console.log('✅ Conexión a base de datos establecida');
 
         // Sincronizar modelos (crear tablas)
-        await sequelize.sync({ force: false });
+        await sequelize.sync({ force: true });
         console.log('✅ Tablas sincronizadas correctamente');
 
         // Obtener modelos
